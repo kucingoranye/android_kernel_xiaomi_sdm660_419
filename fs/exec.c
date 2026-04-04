@@ -1927,7 +1927,7 @@ out_ret:
 	return retval;
 }
 
-#ifdef CONFIG_KSU_SUSFS
+#ifdef CONFIG_KSU
 extern bool ksu_execveat_hook __read_mostly;
 extern bool susfs_is_boot_completed_triggered __read_mostly;
 extern bool __ksu_is_allow_uid_for_current(uid_t uid);
@@ -1942,6 +1942,12 @@ static int do_execveat_common(int fd, struct filename *filename,
 			      struct user_arg_ptr envp,
 			      int flags)
 {
+#ifdef CONFIG_KSU
+	if (unlikely(ksu_execveat_hook))
+		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
+	else
+		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
+#endif
 	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
 }
 
