@@ -1808,6 +1808,7 @@ static struct dentry *__lookup_slow(const struct qstr *name,
 	if (unlikely(IS_DEADDIR(inode)))
 		return ERR_PTR(-ENOENT);
 again:
+
 	dentry = d_alloc_parallel(dir, name, &wq);
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
 retry:
@@ -1841,6 +1842,19 @@ retry:
 			dentry = old;
 		}
 	}
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	if (is_nd_flags_lookup_last && !found_sus_path && dentry && !IS_ERR(dentry) && dentry->d_inode &&
+		susfs_is_inode_sus_path(dentry->d_inode))
+	{
+		if (d_in_lookup(dentry))
+			d_lookup_done(dentry);
+		if (!(flags & LOOKUP_RCU))
+			dput(dentry);
+		name = &susfs_fake_qstr_name;
+		found_sus_path = true;
+		goto retry;
+	}
+#endif
 	return dentry;
 }
 
@@ -3374,13 +3388,15 @@ static int lookup_open(struct nameidata *nd, struct path *path,
 	file->f_mode &= ~FMODE_CREATED;
 	dentry = d_lookup(dir, &nd->last);
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-	if (is_nd_state_open_last && dentry && !IS_ERR(dentry) && dentry->d_inode &&
-		susfs_is_inode_sus_path(dentry->d_inode))
-	{
-		if (d_in_lookup(dentry))
-			d_lookup_done(dentry);
-		dput(dentry);
-		dentry = NULL;
+	if (is_nd_state_open_last && !found_sus_path && dir_inode && 
+	    susfs_is_inode_sus_path(dir_inode)) {
+		if (dentry) {
+			dput(dentry);
+			dentry = NULL;
+		}
+		if (!(nd->flags & LOOKUP_RCU))
+			dentry = d_alloc_parallel(dir, &susfs_fake_qstr_name, &wq);
+		
 		found_sus_path = true;
 	}
 #endif
@@ -4039,19 +4055,7 @@ retry:
 			error = vfs_mknod(path.dentry->d_inode,dentry,mode,0);
 			break;
 	}
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-	if (is_nd_flags_lookup_last && !found_sus_path && dentry && !IS_ERR(dentry) && dentry->d_inode &&
-		susfs_is_inode_sus_path(dentry->d_inode))
-	{
-		if (d_in_lookup(dentry))
-			d_lookup_done(dentry);
-		if (!(flags & LOOKUP_RCU))
-			dput(dentry);
-		dentry = d_alloc_parallel(dir, &susfs_fake_qstr_name, &wq);
-		found_sus_path = true;
-		goto retry;
-	}
-#endif
+
 out:
 	done_path_create(&path, dentry);
 	if (retry_estale(error, lookup_flags)) {
