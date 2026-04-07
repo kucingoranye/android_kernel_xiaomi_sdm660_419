@@ -1361,9 +1361,7 @@ static int watch_one_dir(struct watch_dir *wd)
  * Cleanup is deferred to a delayed_work that runs outside the SRCU context.
  */
 static int susfs_handle_sdcard_inode_event(struct fsnotify_group *group,
-											struct inode *to_tell,
-											struct fsnotify_mark *inode_mark,
-											struct fsnotify_mark *vfsmount_mark,
+											struct inode *inode,
 											u32 mask, const void *data, int data_type,
 											const unsigned char *file_name, u32 cookie,
 											struct fsnotify_iter_info *iter_info)
@@ -1397,7 +1395,7 @@ static int add_mark_on_inode(struct inode *inode, u32 mask,
 	fsnotify_init_mark(m, g);
 	m->mask = mask;
 
-	if (fsnotify_add_mark(m, inode, NULL, 0)) {
+	if (fsnotify_add_mark(m, &inode->i_fsnotify_marks, FSNOTIFY_OBJ_TYPE_INODE, 0)) {
 		fsnotify_put_mark(m);
 		return -EINVAL;
 	}
