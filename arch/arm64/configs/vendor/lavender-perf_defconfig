@@ -1,4 +1,4 @@
-CONFIG_LOCALVERSION="-San-Kernel-Kurotsuki-R1.1.107"
+CONFIG_LOCALVERSION="-San-Kurotsuki-Nxt-Sfs-Ardi-April"
 # CONFIG_LOCALVERSION_AUTO is not set
 CONFIG_NO_HZ=y
 CONFIG_NO_HZ_IDLE=y
@@ -23,6 +23,30 @@ CONFIG_CGROUP_CPUACCT=y
 CONFIG_CGROUP_BPF=y
 CONFIG_SCHED_CORE_CTL=y
 CONFIG_NAMESPACES=y
+# ksun manual hook
+CONFIG_KSU=y
+CONFIG_KSU_MANUAL_HOOK=y
+# susfs
+CONFIG_KSU_SUSFS=y
+# kpm
+# CONFIG_KPM is not set
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_ALL is not set
+# avc log spoofing
+# CONFIG_KSU_EXTRAS is not set
+# kprobes
+# CONFIG_KPROBES is not set
+# CONFIG_HAVE_KPROBES is not set
+# CONFIG_KPROBE_EVENTS is not set
+# kernel debug
+# CONFIG_DEBUG_KERNEL is not set
+# CONFIG_DEBUG_INFO is not set
+# CONFIG_DEBUG_PREEMPT is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_MUTEXES is not set
+# lto
+CONFIG_LTO=y
+CONFIG_LTO_CLANG=y
 CONFIG_LTO_CLANG_THIN=y
 CONFIG_POLLY_CLANG=y
 # CONFIG_UTS_NS is not set
