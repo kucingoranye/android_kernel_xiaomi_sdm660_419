@@ -1165,10 +1165,13 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type,
     // - We will just stop checking for ksu process if /sdcard/Android is accessible,
     //   for the sake of performance
     if (!READ_ONCE(susfs_is_sdcard_android_data_decrypted) && susfs_is_current_ksu_domain()) {
-        mnt = susfs_alloc_non_unshare_ksu_vfsmnt(name ? : "none");
-        if (!mnt)
+        struct mount *m;
+        
+        m = susfs_alloc_non_unshare_ksu_vfsmnt(name ? : "none");
+        if (!m)
             return ERR_PTR(-ENOMEM);
-        return mnt;
+            
+        return &m->mnt;
     }
 #endif
 
