@@ -1296,25 +1296,28 @@ extern void susfs_spoof_uname(struct new_utsname* tmp);
 #endif
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 {
-	struct new_utsname tmp;
+    struct new_utsname tmp;
 
-	down_read(&uts_sem);
-	memcpy(&tmp, utsname(), sizeof(tmp));
+    down_read(&uts_sem);
+    memcpy(&tmp, utsname(), sizeof(tmp));
+
+    if (current_uid().val == 0 && 
+        (!strncmp(current->comm, "bpfloader", 9) ||
+         !strncmp(current->comm, "netbpfload", 10) ||
+         !strncmp(current->comm, "netd", 4))) {
+        strcpy(tmp.release, "5.4.186");
+    }
+
 #ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
-	susfs_spoof_uname(&tmp);
+    susfs_spoof_uname(&tmp);
 #endif
-	up_read(&uts_sem);
-	if (copy_to_user(name, &tmp, sizeof(tmp)))
-		return -EFAULT;
 
-	override_custom_release(name->release, sizeof(name->release));
-	if (override_release(name->release, sizeof(name->release)))
-		return -EFAULT;
-	if (override_architecture(name))
-		return -EFAULT;
-	if (override_version(name))
-		return -EFAULT;
-	return 0;
+    up_read(&uts_sem);
+
+    if (copy_to_user(name, &tmp, sizeof(tmp)))
+        return -EFAULT;
+
+    return 0;
 }
 
 #ifdef __ARCH_WANT_SYS_OLD_UNAME
