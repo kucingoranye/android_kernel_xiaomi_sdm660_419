@@ -32,8 +32,6 @@ CONFIG_KSU_SUSFS=y
 # CONFIG_KPM is not set
 CONFIG_KALLSYMS=y
 # CONFIG_KALLSYMS_ALL is not set
-# avc log spoofing
-# CONFIG_KSU_EXTRAS is not set
 # kprobes
 # CONFIG_KPROBES is not set
 # CONFIG_HAVE_KPROBES is not set
