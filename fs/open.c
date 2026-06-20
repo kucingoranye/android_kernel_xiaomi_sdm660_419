@@ -354,6 +354,7 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
  * switching the fsuid/fsgid around to the real ones.
  */
 #ifdef CONFIG_KSU
+__attribute__((hot))
 extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 			 int *flags);
 #endif
