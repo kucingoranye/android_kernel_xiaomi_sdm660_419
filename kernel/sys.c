@@ -1312,17 +1312,9 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 		susfs_spoof_uname(&tmp);
 #endif
 	up_read(&uts_sem);
-	if (copy_to_user(name, &tmp, sizeof(tmp)))
-		return -EFAULT;
-
-	override_custom_release(name->release, sizeof(name->release));
-	if (override_release(name->release, sizeof(name->release)))
-		return -EFAULT;
-	if (override_architecture(name))
-		return -EFAULT;
-	if (override_version(name))
-		return -EFAULT;
-	return 0;
+    if (copy_to_user(name, &tmp, sizeof(tmp)))
+        return -EFAULT;
+    return 0;
 }
 
 #ifdef __ARCH_WANT_SYS_OLD_UNAME
