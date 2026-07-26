@@ -26,7 +26,7 @@ on:
           - lengkap
   push:
     branches:
-      - android-4.19-stable
+      - ksun-3.3.0
 
 env:
   KERNEL_DIR: ${{ github.workspace }}/kernel
