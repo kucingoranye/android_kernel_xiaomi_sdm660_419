@@ -6,7 +6,7 @@ on:
       defconfig:
         description: 'Defconfig yang dipakai'
         required: false
-        default: 'vendor/whyred-perf_defconfig'
+        default: 'vendor/lavender-perf_defconfig'
       lto_mode:
         description: 'Mode LTO (thin/full/none)'
         required: false
@@ -26,7 +26,7 @@ on:
           - lengkap
   push:
     branches:
-      - back-ksun-3.3.0-33223
+      - back-tc2
 
 env:
   KERNEL_DIR: ${{ github.workspace }}/kernel
