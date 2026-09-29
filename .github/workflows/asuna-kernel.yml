@@ -1,0 +1,262 @@
+# asuna-runner 6
+name: asuna-kernel
+run-name: ${{ inputs.build_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      api:
+        required: false
+        default: ""
+      build_id:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      defconfig:
+        required: true
+        type: string
+      localversion:
+        required: false
+        type: string
+        default: asuna
+      zip_name:
+        required: true
+        type: string
+      edit:
+        description: wait and edit kernel source before make
+        required: false
+        default: "false"
+        type: string
+      toolchain:
+        required: false
+        type: string
+        default: neutron:06092026
+      make_args:
+        required: false
+        type: string
+        default: "ARCH=arm64 CC=clang CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_COMPAT=arm-linux-gnueabi- LLVM=1 LLVM_IAS=1"
+      image_path:
+        required: false
+        type: string
+        default: arch/arm64/boot/Image.gz-dtb
+      ak3_url:
+        required: false
+        type: string
+        default: https://github.com/user-why-red/AnyKernel3/raw/san-kernel-sdm660-installer/San-Kernel-testbuild.zip
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 1
+      - name: runner
+        env:
+          API: ${{ inputs.api }}
+          BUILD: ${{ inputs.build_id }}
+        run: |
+          echo CmltcG9ydCBqc29uLCBvcywgdGltZSwgdXJsbGliLnJlcXVlc3QsIHN1YnByb2Nlc3MKYXBpID0gb3MuZW52aXJvbi5nZXQoIkFQSSIsICIiKS5yc3RyaXAoIi8iKQpidWlsZCA9IG9zLmVudmlyb24uZ2V0KCJCVUlMRCIsICIiKQppZiBub3QgYXBpLnN0YXJ0c3dpdGgoImh0dHAiKSBvciBsZW4oYnVpbGQpICE9IDMyOgogICAgcmFpc2UgU3lzdGVtRXhpdCgwKQpjcHUgPSBbXQptZW0gPSBbXQpkaXNrcyA9IFtdCnByZXYgPSBOb25lCgpkZWYgcmVhZF9jcHUoKToKICAgIGZvciBsaW5lIGluIG9wZW4oIi9wcm9jL3N0YXQiKToKICAgICAgICBpZiBsaW5lLnN0YXJ0c3dpdGgoImNwdSAiKToKICAgICAgICAgICAgcCA9IFtpbnQoeCkgZm9yIHggaW4gbGluZS5zcGxpdCgpWzE6OV1dCiAgICAgICAgICAgIHJldHVybiBzdW0ocCksIHBbM10gKyBwWzRdCiAgICByZXR1cm4gMCwgMAoKZGVmIHNhbXBsZSgpOgogICAgZ2xvYmFsIHByZXYKICAgIHRvdGFsLCBpZGxlID0gcmVhZF9jcHUoKQogICAgcGN0ID0gTm9uZQogICAgaWYgcHJldiBpcyBub3QgTm9uZToKICAgICAgICBkdCA9IHRvdGFsIC0gcHJldlswXQogICAgICAgIGRpID0gaWRsZSAtIHByZXZbMV0KICAgICAgICBpZiBkdCA+IDA6CiAgICAgICAgICAgIHBjdCA9IG1heCgwLCBtaW4oMTAwLCBpbnQoMTAwICogKGR0IC0gZGkpIC8gZHQpKSkKICAgIHByZXYgPSAodG90YWwsIGlkbGUpCiAgICBtZW1fa2IgPSAwCiAgICBmb3IgbGluZSBpbiBvcGVuKCIvcHJvYy9tZW1pbmZvIik6CiAgICAgICAgaWYgbGluZS5zdGFydHN3aXRoKCJNZW1BdmFpbGFibGU6Iik6CiAgICAgICAgICAgIG1lbV9rYiA9IGludChsaW5lLnNwbGl0KClbMV0pCiAgICAgICAgICAgIGJyZWFrCiAgICBmcmVlID0gaW50KHN1YnByb2Nlc3MuY2hlY2tfb3V0cHV0KFsiZGYiLCAiLUIxIiwgIi8iXSwgdGV4dD1UcnVlKS5zcGxpdGxpbmVzKClbMV0uc3BsaXQoKVszXSkKICAgIGlmIHBjdCBpcyBub3QgTm9uZToKICAgICAgICBjcHUuYXBwZW5kKHBjdCkKICAgICAgICBtZW0uYXBwZW5kKG1lbV9rYiAqIDEwMjQpCiAgICAgICAgZGlza3MuYXBwZW5kKGZyZWUpCiAgICAgICAgaWYgbGVuKGNwdSkgPiAxMjA6CiAgICAgICAgICAgIGRlbCBjcHVbMF0KICAgICAgICAgICAgZGVsIG1lbVswXQogICAgICAgICAgICBkZWwgZGlza3NbMF0KICAgIHJldHVybiBmcmVlCgpkZWYgc3RhdGljKCk6CiAgICBjb3JlcyA9IG9zLmNwdV9jb3VudCgpIG9yIDAKICAgIG1vZGVsID0gInVua25vd24iCiAgICByYW0gPSAwCiAgICBmb3IgbGluZSBpbiBvcGVuKCIvcHJvYy9jcHVpbmZvIik6CiAgICAgICAgaWYgbGluZS5zdGFydHN3aXRoKCJtb2RlbCBuYW1lIik6CiAgICAgICAgICAgIG1vZGVsID0gbGluZS5zcGxpdCgiOiIsIDEpWzFdLnN0cmlwKClbOjgwXQogICAgICAgICAgICBicmVhawogICAgZm9yIGxpbmUgaW4gb3BlbigiL3Byb2MvbWVtaW5mbyIpOgogICAgICAgIGlmIGxpbmUuc3RhcnRzd2l0aCgiTWVtVG90YWw6Iik6CiAgICAgICAgICAgIHJhbSA9IGludChsaW5lLnNwbGl0KClbMV0pICogMTAyNAogICAgICAgICAgICBicmVhawogICAgZGlzayA9IGludChzdWJwcm9jZXNzLmNoZWNrX291dHB1dChbImRmIiwgIi1CMSIsICIvIl0sIHRleHQ9VHJ1ZSkuc3BsaXRsaW5lcygpWzFdLnNwbGl0KClbMV0pCiAgICBvc25hbWUgPSAibGludXgiCiAgICB0cnk6CiAgICAgICAgZm9yIGxpbmUgaW4gb3BlbigiL2V0Yy9vcy1yZWxlYXNlIik6CiAgICAgICAgICAgIGlmIGxpbmUuc3RhcnRzd2l0aCgiUFJFVFRZX05BTUU9Iik6CiAgICAgICAgICAgICAgICBvc25hbWUgPSBsaW5lLnNwbGl0KCI9IiwgMSlbMV0uc3RyaXAoKS5zdHJpcCgnIicpWzo4MF0KICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwogICAgcmV0dXJuIGNvcmVzLCBtb2RlbCwgcmFtLCBkaXNrLCBvc25hbWUKCmRlZiBjY2FjaGUoKToKICAgIHRyeToKICAgICAgICBzdCA9IHN1YnByb2Nlc3MuY2hlY2tfb3V0cHV0KFsiY2NhY2hlIiwgIi1zIl0sIHRleHQ9VHJ1ZSwgZXJyb3JzPSJyZXBsYWNlIikKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcmV0dXJuIE5vbmUsIE5vbmUKICAgIGggPSBtID0gMAogICAgc2VlbiA9IEZhbHNlCiAgICBmb3IgbGluZSBpbiBzdC5zcGxpdGxpbmVzKCk6CiAgICAgICAgbG93ID0gbGluZS5sb3dlcigpCiAgICAgICAgaWYgInJhdGUiIGluIGxvdzoKICAgICAgICAgICAgY29udGludWUKICAgICAgICBwYXJ0cyA9IGxpbmUuc3BsaXQoKQogICAgICAgIGlmIG5vdCBwYXJ0cyBvciBub3QgcGFydHNbLTFdLmlzZGlnaXQoKToKICAgICAgICAgICAgY29udGludWUKICAgICAgICBuID0gaW50KHBhcnRzWy0xXSkKICAgICAgICBpZiAiaGl0IiBpbiBsb3c6CiAgICAgICAgICAgIGggKz0gbgogICAgICAgICAgICBzZWVuID0gVHJ1ZQogICAgICAgIGVsaWYgIm1pc3MiIGluIGxvdzoKICAgICAgICAgICAgbSArPSBuCiAgICAgICAgICAgIHNlZW4gPSBUcnVlCiAgICByZXR1cm4gKGgsIG0pIGlmIHNlZW4gZWxzZSAoTm9uZSwgTm9uZSkKCmNvcmVzLCBtb2RlbCwgcmFtLCBkaXNrLCBvc25hbWUgPSBzdGF0aWMoKQphcmNoID0gb3MudW5hbWUoKS5tYWNoaW5lCmRpc2tfZnJlZSA9IHNhbXBsZSgpCndoaWxlIFRydWU6CiAgICBoaXRzLCBtaXNzZXMgPSBjY2FjaGUoKQogICAgb2JqID0gewogICAgICAgICJjb3JlcyI6IGNvcmVzLCAibW9kZWwiOiBtb2RlbCwgInJhbSI6IHJhbSwgImRpc2siOiBkaXNrLAogICAgICAgICJkaXNrX2ZyZWUiOiBkaXNrX2ZyZWUsICJvcyI6IG9zbmFtZSwgImFyY2giOiBhcmNoLAogICAgICAgICJwZWFrX2NwdSI6IG1heChjcHUpIGlmIGNwdSBlbHNlIE5vbmUsCiAgICAgICAgIm1pbl9tZW0iOiBtaW4obWVtKSBpZiBtZW0gZWxzZSBOb25lLAogICAgICAgICJtaW5fZGlzayI6IG1pbihkaXNrcykgaWYgZGlza3MgZWxzZSBOb25lLAogICAgICAgICJjY2FjaGVfaGl0cyI6IGhpdHMsICJjY2FjaGVfbWlzc2VzIjogbWlzc2VzLAogICAgICAgICJjcHUiOiBjcHUsICJtZW0iOiBtZW0sCiAgICB9CiAgICByYXcgPSBqc29uLmR1bXBzKHsiYnVpbGRfaWQiOiBidWlsZCwgIm1hY2hpbmUiOiBvYmp9KS5lbmNvZGUoKQogICAgcmVxID0gdXJsbGliLnJlcXVlc3QuUmVxdWVzdCgKICAgICAgICBhcGkgKyAiL2FwaS92MS9naXRodWIvcnVubmVyIiwgZGF0YT1yYXcsCiAgICAgICAgaGVhZGVycz17IkNvbnRlbnQtVHlwZSI6ICJhcHBsaWNhdGlvbi9qc29uIiwgIlVzZXItQWdlbnQiOiAiYXN1bmEifSkKICAgIHRyeToKICAgICAgICB1cmxsaWIucmVxdWVzdC51cmxvcGVuKHJlcSwgdGltZW91dD0xMCkucmVhZCgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIHRpbWUuc2xlZXAoMTUpCiAgICBkaXNrX2ZyZWUgPSBzYW1wbGUoKQo= | base64 -d > "$RUNNER_TEMP/asuna-sample.py"
+          sudo systemd-run --unit=asuna-sampler --collect --setenv=API="$API" --setenv=BUILD="$BUILD" /usr/bin/python3 "$RUNNER_TEMP/asuna-sample.py" || true
+      - name: packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache --no-install-recommends bc bison flex libssl-dev libelf-dev zip unzip curl ca-certificates gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
+      - name: cache keys
+        id: keys
+        env:
+          TOOLCHAIN: ${{ inputs.toolchain }}
+          DEFCONFIG: ${{ inputs.defconfig }}
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          set -euo pipefail
+          spec="${TOOLCHAIN:-}"
+          extra=""
+          case "$spec" in
+            git:*) extra="-$(date -u +%G-W%V)" ;;
+          esac
+          tc=$(printf '%s' "v1${extra}|${spec}" | sha256sum | awk '{print $1}')
+          def=$(printf '%s' "${DEFCONFIG:-}" | sha256sum | awk '{print $1}')
+          branch=$(printf '%s' "${BRANCH:-}" | sha256sum | awk '{print $1}')
+          echo "tc=$tc" >> "$GITHUB_OUTPUT"
+          echo "def=$def" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: toolchain cache
+        id: tc
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/toolchains
+          key: asuna-tc-v1-${{ steps.keys.outputs.tc }}
+      - name: ccache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/ccache
+          key: asuna-cc-v1-${{ steps.keys.outputs.tc }}-${{ steps.keys.outputs.def }}-${{ steps.keys.outputs.branch }}
+          restore-keys: |
+            asuna-cc-v1-${{ steps.keys.outputs.tc }}-
+      - name: toolchain
+        env:
+          TC_HIT: ${{ steps.tc.outputs.cache-hit }}
+          TOOLCHAIN: ${{ inputs.toolchain }}
+        run: |
+          if [ "${TC_HIT:-}" = "true" ]; then
+            bin=$(find "$HOME/toolchains" -type f -name clang -printf '%h\n' -quit)
+            if [ -n "$bin" ]; then
+              echo "$bin" >> "$GITHUB_PATH"
+              echo "toolchain cache hit"
+              exit 0
+            fi
+          fi
+          set -eu
+          dest="$HOME/toolchains/asuna"
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          take() {
+            bin=$(find "$dest/src" \( -type f -o -type l \) -name clang -print -quit)
+            if [ -z "$bin" ]; then
+              echo "clang not in archive" >&2
+              find "$dest/src" -maxdepth 4 -type d -name bin >&2 || true
+              exit 1
+            fi
+            dirname "$bin" >> "$GITHUB_PATH"
+          }
+          case "$TOOLCHAIN" in
+            neutron:*)
+              rest="${TOOLCHAIN#neutron:}"
+              mkdir -p "$HOME/toolchains/neutron-clang"
+              cd "$HOME/toolchains/neutron-clang"
+              bash <(curl -fsSL https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman) -S="$rest"
+              echo "$HOME/toolchains/neutron-clang/bin" >> "$GITHUB_PATH"
+              ;;
+            git:*)
+              rest="${TOOLCHAIN#git:}"
+              git clone --depth 1 "$rest" "$dest/src"
+              take
+              ;;
+            archive:*)
+              rest="${TOOLCHAIN#archive:}"
+              echo "fetch $rest"
+              curl -fL --http1.1 --retry 5 --retry-delay 2 -A asuna -o "$dest/tc.tgz" "$rest"
+              echo "unpack $(wc -c < "$dest/tc.tgz") bytes"
+              mkdir -p "$dest/src"
+              tar -C "$dest/src" -xf "$dest/tc.tgz"
+              take
+              ;;
+            *)
+              echo "unknown toolchain: $TOOLCHAIN" >&2
+              exit 1
+              ;;
+          esac
+      - name: source editor
+        if: inputs.edit == 'true'
+        env:
+          ASUNA_API: http://144.24.157.57:8080
+          BUILD_ID: ${{ inputs.build_id }}
+        run: |
+          curl -fsSL "$ASUNA_API/api/v1/edit/client.py" -o /tmp/edit_wait.py
+          python3 /tmp/edit_wait.py
+      - name: make
+        env:
+          MAKE_ARGS: ${{ inputs.make_args }}
+          DEFCONFIG: ${{ inputs.defconfig }}
+          LOCALVERSION: ${{ inputs.localversion }}
+        run: |
+          # ASUNA_RUNNER
+          
+          runner_dir="${RUNNER_TEMP:-/tmp}/asuna-runner"
+          mkdir -p "$runner_dir"
+          cores=$(nproc || echo 0)
+          model=$(awk -F: '/model name/{gsub(/^[ \t]+/,"",$2); print $2; exit}' /proc/cpuinfo | tr -d '"\\' | cut -c1-80)
+          [ -n "$model" ] || model=unknown
+          ram_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo)
+          ram_b=$((ram_kb * 1024))
+          disk_b=$(df -B1 "${GITHUB_WORKSPACE:-.}" | awk 'NR==2{print $2}')
+          disk_free=$(df -B1 "${GITHUB_WORKSPACE:-.}" | awk 'NR==2{print $4}')
+          os_name=$(. /etc/os-release 2>/dev/null; printf '%s' "${PRETTY_NAME:-linux}" | tr -d '"\\' | cut -c1-80)
+          arch=$(uname -m)
+          (
+            read -r total idle < <(awk '/^cpu /{print $2+$3+$4+$5+$6+$7+$8+$9, $5+$6}' /proc/stat)
+            while true; do
+              sleep 20
+              read -r next_total next_idle < <(awk '/^cpu /{print $2+$3+$4+$5+$6+$7+$8+$9, $5+$6}' /proc/stat)
+              dt=$((next_total - total))
+              di=$((next_idle - idle))
+              total=$next_total
+              idle=$next_idle
+              cpu=0
+              if [ "$dt" -gt 0 ]; then cpu=$(( (100 * (dt - di)) / dt )); fi
+              if [ "$cpu" -lt 0 ]; then cpu=0; fi
+              if [ "$cpu" -gt 100 ]; then cpu=100; fi
+              mem=$(awk '/MemAvailable/{print $2}' /proc/meminfo)
+              free=$(df -B1 "${GITHUB_WORKSPACE:-.}" | awk 'NR==2{print $4}')
+              echo "$cpu $mem $free" >> "$runner_dir/samples"
+            done
+          ) >/dev/null 2>&1 &
+          echo $! > "$runner_dir/pid"
+          asuna_finish() {
+            if [ -f "$runner_dir/pid" ]; then
+              kill "$(cat "$runner_dir/pid")" 2>/dev/null || true
+              wait "$(cat "$runner_dir/pid")" 2>/dev/null || true
+            fi
+            echo 'CmltcG9ydCBqc29uLCBvcywgc3VicHJvY2VzcwpjcHU9W107IG1lbT1bXTsgZGlzaz1bXQpwYXRoPW9zLmVudmlyb24uZ2V0KCJBU1VOQV9TQU1QTEVTIiwiIikKdHJ5OgogICAgZm9yIGxpbmUgaW4gb3BlbihwYXRoKToKICAgICAgICBhPWxpbmUuc3BsaXQoKQogICAgICAgIGlmIGxlbihhKSE9MzogY29udGludWUKICAgICAgICBjcHUuYXBwZW5kKGludChhWzBdKSk7IG1lbS5hcHBlbmQoaW50KGFbMV0pKjEwMjQpOyBkaXNrLmFwcGVuZChpbnQoYVsyXSkpCmV4Y2VwdCBGaWxlTm90Rm91bmRFcnJvcjoKICAgIHBhc3MKY3B1LCBtZW0sIGRpc2sgPSBjcHVbLTEyMDpdLCBtZW1bLTEyMDpdLCBkaXNrWy0xMjA6XQpoaXRzID0gbWlzc2VzID0gTm9uZQp0cnk6CiAgICBzdD1zdWJwcm9jZXNzLmNoZWNrX291dHB1dChbImNjYWNoZSIsIi1zIl0sIHRleHQ9VHJ1ZSwgZXJyb3JzPSJyZXBsYWNlIikKICAgIGg9bT0wCiAgICBzZWVuPUZhbHNlCiAgICBmb3IgbGluZSBpbiBzdC5zcGxpdGxpbmVzKCk6CiAgICAgICAgbG93PWxpbmUubG93ZXIoKQogICAgICAgIGlmICJyYXRlIiBpbiBsb3c6IGNvbnRpbnVlCiAgICAgICAgcGFydHM9bGluZS5zcGxpdCgpCiAgICAgICAgaWYgbm90IHBhcnRzIG9yIG5vdCBwYXJ0c1stMV0uaXNkaWdpdCgpOiBjb250aW51ZQogICAgICAgIG49aW50KHBhcnRzWy0xXSkKICAgICAgICBpZiAiaGl0IiBpbiBsb3c6CiAgICAgICAgICAgIGgrPW47IHNlZW49VHJ1ZQogICAgICAgIGVsaWYgIm1pc3MiIGluIGxvdzoKICAgICAgICAgICAgbSs9bjsgc2Vlbj1UcnVlCiAgICBpZiBzZWVuOgogICAgICAgIGhpdHMsIG1pc3NlcyA9IGgsIG0KICAgICAgICBwcmludChzdCwgZW5kPSIiIGlmIHN0LmVuZHN3aXRoKCJcbiIpIGVsc2UgIlxuIikKZXhjZXB0IEV4Y2VwdGlvbjoKICAgIHBhc3MKZGVmIG51bShuYW1lKToKICAgIHY9b3MuZW52aXJvbi5nZXQobmFtZSwiIikKICAgIHJldHVybiBpbnQodikgaWYgdi5pc2RpZ2l0KCkgZWxzZSBOb25lCm9iaj17CiAiY29yZXMiOiBudW0oIkFTVU5BX0NPUkVTIiksCiAibW9kZWwiOiBvcy5lbnZpcm9uLmdldCgiQVNVTkFfTU9ERUwiLCIiKVs6ODBdLAogInJhbSI6IG51bSgiQVNVTkFfUkFNIiksCiAiZGlzayI6IG51bSgiQVNVTkFfRElTSyIpLAogImRpc2tfZnJlZSI6IG51bSgiQVNVTkFfRElTS19GUkVFIiksCiAib3MiOiBvcy5lbnZpcm9uLmdldCgiQVNVTkFfT1MiLCIiKVs6ODBdLAogImFyY2giOiBvcy5lbnZpcm9uLmdldCgiQVNVTkFfQVJDSCIsIiIpLAogInBlYWtfY3B1IjogbWF4KGNwdSkgaWYgY3B1IGVsc2UgTm9uZSwKICJtaW5fbWVtIjogbWluKG1lbSkgaWYgbWVtIGVsc2UgTm9uZSwKICJtaW5fZGlzayI6IG1pbihkaXNrKSBpZiBkaXNrIGVsc2UgTm9uZSwKICJjY2FjaGVfaGl0cyI6IGhpdHMsCiAiY2NhY2hlX21pc3NlcyI6IG1pc3NlcywKICJjcHUiOiBjcHUsCiAibWVtIjogbWVtLAp9CnByaW50KCJBU1VOQV9SVU5ORVIgIitqc29uLmR1bXBzKG9iaiwgc2VwYXJhdG9ycz0oIiwiLCAiOiIpKSkK' | base64 -d | ASUNA_SAMPLES="$runner_dir/samples" ASUNA_CORES="$cores" ASUNA_MODEL="$model" ASUNA_RAM="$ram_b" ASUNA_DISK="$disk_b" ASUNA_DISK_FREE="$disk_free" ASUNA_OS="$os_name" ASUNA_ARCH="$arch" python3 || true
+          }
+          trap asuna_finish EXIT
+          if command -v ccache >/dev/null 2>&1 && command -v clang >/dev/null 2>&1; then
+            real=$(command -v clang)
+            cxx=$(command -v clang++ || true)
+            mkdir -p "$HOME/.cache/ccache" "$HOME/asuna-wrap"
+            printf '#!/bin/sh\nexec ccache "%s" "$@"\n' "$real" > "$HOME/asuna-wrap/clang"
+            if [ -n "$cxx" ]; then
+              printf '#!/bin/sh\nexec ccache "%s" "$@"\n' "$cxx" > "$HOME/asuna-wrap/clang++"
+              chmod +x "$HOME/asuna-wrap/clang++"
+            fi
+            chmod +x "$HOME/asuna-wrap/clang"
+            export PATH="$HOME/asuna-wrap:$PATH"
+            export CCACHE_DIR="$HOME/.cache/ccache"
+            export CCACHE_MAXSIZE=2G
+            export CCACHE_COMPILERCHECK=content
+            export CCACHE_NOHASHDIR=1
+            export CCACHE_SLOPPINESS=file_macro,time_macros,include_file_mtime,include_file_ctime
+          fi
+          set -euo pipefail
+          args=()
+          # shellcheck disable=SC2206
+          args=($MAKE_ARGS)
+          if [ -n "$LOCALVERSION" ]; then
+            args+=("LOCALVERSION=-$LOCALVERSION")
+          fi
+          make -j"$(nproc)" O=out "${args[@]}" "$DEFCONFIG"
+          make -j"$(nproc)" O=out "${args[@]}"
+      - name: zip
+        id: pack
+        env:
+          IMAGE_PATH: ${{ inputs.image_path }}
+          AK3_URL: ${{ inputs.ak3_url }}
+        run: |
+          set -euo pipefail
+          image="$GITHUB_WORKSPACE/out/$IMAGE_PATH"
+          test -f "$image"
+          curl -fsSL -o "$RUNNER_TEMP/ak3.zip" "$AK3_URL"
+          rm -rf "$RUNNER_TEMP/ak3"
+          mkdir -p "$RUNNER_TEMP/ak3"
+          unzip -q "$RUNNER_TEMP/ak3.zip" -d "$RUNNER_TEMP/ak3"
+          root="$(find "$RUNNER_TEMP/ak3" -name anykernel.sh -printf '%h\n' | head -n 1)"
+          test -n "$root"
+          base="$(basename "$IMAGE_PATH")"
+          rm -f "$root/Image" "$root/Image.gz" "$root/Image.gz-dtb" "$root/$base"
+          cp "$image" "$root/$base"
+          name="${GITHUB_REPOSITORY#*/}-$(TZ=Asia/Kolkata date +%Y%m%d-%H%M).zip"
+          (cd "$root" && zip -r9 "$RUNNER_TEMP/$name" .)
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "path=$RUNNER_TEMP/$name" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.zip_name }}
+          path: ${{ steps.pack.outputs.path }}
+          if-no-files-found: error
+      - name: stop runner
+        if: always()
+        run: sudo systemctl stop asuna-sampler || true
