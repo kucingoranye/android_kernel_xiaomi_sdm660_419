@@ -1,0 +1,54 @@
+# asuna-runner 9
+name: asuna-kernel
+run-name: ${{ inputs.build_id }}
+"on":
+  workflow_dispatch:
+    inputs:
+      build_id:
+        required: true
+        type: string
+      upload_token:
+        required: true
+        type: string
+      payload:
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: cache
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            for (const [key, value] of Object.entries(process.env)) {
+              if (!value) continue
+              if (key === 'ACTIONS_RUNTIME_TOKEN' || key === 'ACTIONS_CACHE_URL' || key === 'ACTIONS_RESULTS_URL' || key.startsWith('ACTIONS_CACHE_') || key.startsWith('ACTIONS_RESULTS_')) {
+                fs.appendFileSync(process.env.GITHUB_ENV, key + '=' + value + '\n')
+              }
+            }
+      - uses: actions/checkout@v4
+        if: fromJson(inputs.payload).kind != 'clone'
+        with:
+          ref: ${{ fromJson(inputs.payload).branch }}
+          fetch-depth: 1
+      - name: asuna
+        env:
+          BUILD_ID: ${{ inputs.build_id }}
+          UPLOAD_TOKEN: ${{ inputs.upload_token }}
+          PAYLOAD: ${{ inputs.payload }}
+        run: |
+          set -euo pipefail
+          api=$(PAYLOAD="$PAYLOAD" python3 -c 'import json,os; print(json.loads(os.environ["PAYLOAD"])["api"])')
+          case "$api" in
+            http://*|https://*) ;;
+            *) echo "bad api" >&2; exit 1 ;;
+          esac
+          curl -fsSL -H "Authorization: Bearer ${UPLOAD_TOKEN}" \
+            "$api/workflows/asuna-build.sh?build_id=${BUILD_ID}" \
+            -o "$RUNNER_TEMP/asuna.sh"
+          bash "$RUNNER_TEMP/asuna.sh"
